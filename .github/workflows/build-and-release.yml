@@ -28,7 +28,7 @@ jobs:
 
     - name: Install ldid for macOS code signing
       run: |
-        wget https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5/ldid_linux_x86_64
+        wget https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_x86_64
         chmod +x ldid_linux_x86_64
         sudo mv ldid_linux_x86_64 /usr/local/bin/ldid
 
