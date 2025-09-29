@@ -195,23 +195,21 @@ The tool uses sensible defaults - no configuration needed:
 
 ## Troubleshooting
 
-### macOS: "killed" or Security Warning
+### macOS: "killed" Error
 
-If you see `[1] killed codegen-cloner` or a security warning, macOS Gatekeeper is blocking the unsigned binary. Fix this by:
+If you see `[1] killed codegen-cloner`, the binary needs to be code-signed for macOS. Fix this by:
 
-1. **Allow the binary to run:**
+1. **Code sign the binary:**
    ```bash
-   sudo xattr -d com.apple.quarantine $(which codegen-cloner)
+   codesign --sign - $(which codegen-cloner)
    ```
 
-2. **Or go to System Preferences:**
-   - System Preferences → Security & Privacy → General
-   - Click "Allow Anyway" next to the blocked app message
-
-3. **Or reinstall** (the installer now automatically removes quarantine):
+2. **Or reinstall** (the installer now automatically code-signs):
    ```bash
    curl -fsSL https://raw.githubusercontent.com/Kirana-Labs/codegen-cloner/main/install.sh | bash
    ```
+
+This is required because macOS kills unsigned binaries for security reasons.
 
 ### Windows: "Windows protected your PC"
 

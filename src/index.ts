@@ -5,17 +5,22 @@ import prompts from 'prompts';
 import chalk from 'chalk';
 import { homedir } from 'os';
 import { join } from 'path';
+import { readFileSync } from 'fs';
 import { CodegenCloner } from './workflow';
 import { ProjectBrowser } from './project-browser';
 import { ProjectPruner } from './project-pruner';
 import { EnvEditor } from './env-editor';
+
+// Read version from package.json
+const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'));
+const version = packageJson.version;
 
 const program = new Command();
 
 program
   .name('codegen-cloner')
   .description('CLI tool to clone and setup PR projects from Codegen')
-  .version('1.0.0');
+  .version(version);
 
 // Add prune command
 program
@@ -23,7 +28,7 @@ program
   .description('Delete projects older than 2 weeks')
   .action(async () => {
     try {
-      console.log(chalk.blue.bold('🤖 Codegen Cloner v1.0.0\n'));
+      console.log(chalk.blue.bold(`🤖 Codegen Cloner v${version}\n`));
 
       const defaultDir = join(homedir(), 'codegen-projects');
       const pruner = new ProjectPruner(defaultDir);
@@ -42,7 +47,7 @@ program
   .description('Edit .env file for a project')
   .action(async () => {
     try {
-      console.log(chalk.blue.bold('🤖 Codegen Cloner v1.0.0\n'));
+      console.log(chalk.blue.bold(`🤖 Codegen Cloner v${version}\n`));
 
       const defaultDir = join(homedir(), 'codegen-projects');
       const envEditor = new EnvEditor(defaultDir);
@@ -59,7 +64,7 @@ program
   .argument('[pr-url]', 'GitHub PR URL')
   .action(async (prUrl: string | undefined) => {
     try {
-      console.log(chalk.blue.bold('🤖 Codegen Cloner v1.0.0\n'));
+      console.log(chalk.blue.bold(`🤖 Codegen Cloner v${version}\n`));
 
       const defaultDir = join(homedir(), 'codegen-projects');
 

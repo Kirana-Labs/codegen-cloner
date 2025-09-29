@@ -117,6 +117,15 @@ install_binary() {
         exit 1
     fi
 
+    # Ad-hoc code sign on macOS to prevent kernel from killing the binary
+    if [ "$OS" = "macos" ]; then
+        echo -e "${BLUE}🔏 Code signing binary for macOS...${NC}"
+        codesign --sign - "$INSTALL_PATH" 2>/dev/null || {
+            echo -e "${YELLOW}⚠️  Could not code sign binary. If you get 'killed' errors, run:${NC}"
+            echo -e "${YELLOW}   codesign --sign - $INSTALL_PATH${NC}"
+        }
+    fi
+
     # Clean up
     cd - > /dev/null
     rm -rf "$TMP_DIR"

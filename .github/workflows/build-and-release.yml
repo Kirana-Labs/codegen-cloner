@@ -26,8 +26,19 @@ jobs:
     - name: Build TypeScript
       run: npm run build
 
+    - name: Install ldid for macOS code signing
+      run: |
+        wget https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5/ldid_linux_x86_64
+        chmod +x ldid_linux_x86_64
+        sudo mv ldid_linux_x86_64 /usr/local/bin/ldid
+
     - name: Build binaries
       run: npm run build:all
+
+    - name: Code sign macOS binaries
+      run: |
+        ldid -S binaries/index-macos-x64
+        ldid -S binaries/index-macos-arm64
 
     - name: List generated binaries
       run: ls -la binaries/
