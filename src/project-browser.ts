@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { listExistingProjects, openInFileManager, ProjectInfo } from './utils/projects.js';
+import { listExistingProjects, openInFileManager, ProjectInfo } from './utils/projects';
 
 export class ProjectBrowser {
   private baseDir: string;

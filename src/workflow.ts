@@ -1,14 +1,14 @@
 import chalk from 'chalk';
 import ora from 'ora';
-import { parsePRUrl, fetchPRBranch } from './utils/github.js';
-import { getProjectPath, checkProjectExists, ensureDirectoryExists, isGitRepo, getCurrentBranch } from './utils/filesystem.js';
-import { cloneRepository, pullLatestChanges, isRepositoryUpToDate } from './utils/git.js';
-import { isDockerInstalled, installDocker, isDockerRunning, startDocker, isPostgresContainerRunning, startPostgresContainer } from './utils/docker.js';
-import { isPnpmInstalled, installPnpm, runPnpmInstall, runPnpmSeed, runPnpmDev } from './utils/pnpm.js';
+import { parsePRUrl, fetchPRBranch } from './utils/github';
+import { getProjectPath, checkProjectExists, ensureDirectoryExists, isGitRepo, getCurrentBranch } from './utils/filesystem';
+import { cloneRepository, pullLatestChanges, isRepositoryUpToDate } from './utils/git';
+import { isDockerInstalled, installDocker, isDockerRunning, startDocker, isPostgresContainerRunning, startPostgresContainer } from './utils/docker';
+import { isPnpmInstalled, installPnpm, runPnpmInstall, runPnpmSeed, runPnpmDev } from './utils/pnpm';
 import { existsSync } from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { PRInfo } from './types.js';
+import { PRInfo } from './types';
 
 const execAsync = promisify(exec);
 

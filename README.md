@@ -193,6 +193,55 @@ The tool uses sensible defaults - no configuration needed:
 - Git with configured authentication (SSH keys or HTTPS credentials)
 - Internet connection
 
+## Troubleshooting
+
+### macOS: "killed" or Security Warning
+
+If you see `[1] killed codegen-cloner` or a security warning, macOS Gatekeeper is blocking the unsigned binary. Fix this by:
+
+1. **Allow the binary to run:**
+   ```bash
+   sudo xattr -d com.apple.quarantine $(which codegen-cloner)
+   ```
+
+2. **Or go to System Preferences:**
+   - System Preferences → Security & Privacy → General
+   - Click "Allow Anyway" next to the blocked app message
+
+3. **Or reinstall** (the installer now automatically removes quarantine):
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/Kirana-Labs/codegen-cloner/main/install.sh | bash
+   ```
+
+### Windows: "Windows protected your PC"
+
+If Windows Defender blocks the binary:
+
+1. Click "More info"
+2. Click "Run anyway"
+3. Or add an exclusion in Windows Defender settings
+
+### Command Not Found
+
+If `codegen-cloner` command is not found:
+
+1. **Check if it's in your PATH:**
+   ```bash
+   echo $PATH
+   ```
+
+2. **Add to PATH manually:**
+   ```bash
+   export PATH="$HOME/bin:$PATH"
+   # Add to ~/.bashrc or ~/.zshrc to make permanent
+   ```
+
+3. **Verify installation location:**
+   ```bash
+   which codegen-cloner
+   ls -la $(which codegen-cloner)
+   ```
+
 ## Development
 
 ```bash

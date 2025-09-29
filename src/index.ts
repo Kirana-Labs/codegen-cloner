@@ -5,10 +5,10 @@ import prompts from 'prompts';
 import chalk from 'chalk';
 import { homedir } from 'os';
 import { join } from 'path';
-import { CodegenCloner } from './workflow.js';
-import { ProjectBrowser } from './project-browser.js';
-import { ProjectPruner } from './project-pruner.js';
-import { EnvEditor } from './env-editor.js';
+import { CodegenCloner } from './workflow';
+import { ProjectBrowser } from './project-browser';
+import { ProjectPruner } from './project-pruner';
+import { EnvEditor } from './env-editor';
 
 const program = new Command();
 

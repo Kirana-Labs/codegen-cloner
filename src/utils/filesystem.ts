@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { ProjectStatus, PRInfo } from '../types.js';
+import { ProjectStatus, PRInfo } from '../types';
 
 const execAsync = promisify(exec);
 

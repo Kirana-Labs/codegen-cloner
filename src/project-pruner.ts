@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import prompts from 'prompts';
 import ora from 'ora';
-import { getOldProjects, deleteProject, ProjectInfo } from './utils/projects.js';
+import { getOldProjects, deleteProject, ProjectInfo } from './utils/projects';
 
 export class ProjectPruner {
   private baseDir: string;

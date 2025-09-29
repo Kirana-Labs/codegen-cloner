@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { listExistingProjects, openInTextEditor } from './utils/projects.js';
+import { listExistingProjects, openInTextEditor } from './utils/projects';
 
 export class EnvEditor {
   private baseDir: string;

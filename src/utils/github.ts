@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { PRInfo } from '../types.js';
+import { PRInfo } from '../types';
 
 const execAsync = promisify(exec);
 
