@@ -1,0 +1,37 @@
+{
+  "name": "codegen-cloner",
+  "version": "1.0.0",
+  "description": "CLI tool to clone and setup PR projects from Codegen",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "codegen-cloner": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "build:binaries": "npm run build && pkg dist/index.js --out-path binaries",
+    "build:all": "npm run build && pkg dist/index.js --targets node18-linux-x64,node18-macos-x64,node18-macos-arm64,node18-win-x64 --out-path binaries"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "chalk": "^5.3.0",
+    "ora": "^8.0.1",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/prompts": "^2.4.9",
+    "typescript": "^5.3.0",
+    "tsx": "^4.6.0",
+    "pkg": "^5.8.1"
+  },
+  "pkg": {
+    "targets": ["node18-linux-x64", "node18-macos-x64", "node18-macos-arm64", "node18-win-x64"],
+    "outputPath": "binaries"
+  },
+  "keywords": ["cli", "github", "pr", "docker", "pnpm"],
+  "author": "",
+  "license": "MIT"
+}
