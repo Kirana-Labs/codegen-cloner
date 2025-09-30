@@ -1,6 +1,6 @@
 {
   "name": "codegen-cloner",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "CLI tool to clone and setup PR projects from Codegen",
   "main": "dist/index.js",
   "bin": {
