@@ -35,13 +35,13 @@ jobs:
     - name: Build binaries
       run: npm run build:all
 
+    - name: List generated binaries
+      run: ls -la binaries/
+    
     - name: Code sign macOS binaries
       run: |
         ldid -S binaries/index-macos-x64
         ldid -S binaries/index-macos-arm64
-
-    - name: List generated binaries
-      run: ls -la binaries/
 
     - name: Create release
       uses: softprops/action-gh-release@v1
