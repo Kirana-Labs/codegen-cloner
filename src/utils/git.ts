@@ -5,6 +5,41 @@ import { executeWithStreaming } from './streaming-exec';
 
 const execAsync = promisify(exec);
 
+export async function isGitHubCLIInstalled(): Promise<boolean> {
+  try {
+    await execAsync('gh --version');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function isGitHubCLIAuthenticated(): Promise<boolean> {
+  try {
+    await execAsync('gh auth status');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function setupGitHubAuth(): Promise<void> {
+  const hasGH = await isGitHubCLIInstalled();
+  
+  if (!hasGH) {
+    throw new Error('GitHub CLI is not installed. Install it from https://cli.github.com/ and run: gh auth login');
+  }
+  
+  const isAuthenticated = await isGitHubCLIAuthenticated();
+  
+  if (!isAuthenticated) {
+    throw new Error('GitHub CLI is not authenticated. Run: gh auth login');
+  }
+  
+  // Set git to use GitHub CLI as credential helper
+  await execAsync('gh auth setup-git');
+}
+
 export async function cloneRepository(prInfo: PRInfo, targetPath: string): Promise<void> {
   const repoUrl = `https://github.com/${prInfo.owner}/${prInfo.repo}.git`;
 

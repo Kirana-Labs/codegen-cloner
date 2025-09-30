@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { parsePRUrl, fetchPRBranch } from './utils/github';
 import { getProjectPath, checkProjectExists, ensureDirectoryExists, isGitRepo, getCurrentBranch } from './utils/filesystem';
-import { cloneRepository, pullLatestChanges, isRepositoryUpToDate } from './utils/git';
+import { cloneRepository, pullLatestChanges, isRepositoryUpToDate, isGitHubCLIInstalled, isGitHubCLIAuthenticated, setupGitHubAuth } from './utils/git';
 import { isDockerInstalled, installDocker, isDockerRunning, startDocker, isPostgresContainerRunning, startPostgresContainer } from './utils/docker';
 import { isPnpmInstalled, installPnpm, runPnpmInstall, runPnpmSeed, runPnpmDev } from './utils/pnpm';
 import { existsSync } from 'fs';
@@ -23,17 +23,20 @@ export class CodegenCloner {
     console.log(chalk.blue.bold('🚀 Starting Codegen Cloner workflow\n'));
 
     try {
-      // Step 1: Parse PR URL
+      // Step 1: Check GitHub authentication
+      await this.ensureGitHubAuth();
+
+      // Step 2: Parse PR URL
       const spinner = ora('Parsing PR URL...').start();
       const prInfo = parsePRUrl(prUrl);
       spinner.succeed(`Parsed PR: ${prInfo.owner}/${prInfo.repo}#${prInfo.prNumber}`);
 
-      // Step 2: Fetch PR branch
+      // Step 3: Fetch PR branch
       spinner.start('Fetching PR branch information...');
       prInfo.branch = await fetchPRBranch(prInfo);
       spinner.succeed(`Branch: ${prInfo.branch}`);
 
-      // Step 3: Check project directory
+      // Step 4: Check project directory
       const projectPath = getProjectPath(this.baseDir, prInfo);
       const projectStatus = checkProjectExists(projectPath);
 
@@ -60,31 +63,31 @@ export class CodegenCloner {
           return;
         }
       } else {
-        // Step 4: Clone repository
+        // Step 5: Clone repository
         spinner.start('Cloning repository...');
         ensureDirectoryExists(this.baseDir);
         await cloneRepository(prInfo, projectPath);
         spinner.succeed(`Repository cloned to ${projectPath}`);
       }
 
-      // Step 5: Check Docker installation
+      // Step 6: Check Docker installation
       await this.ensureDockerReady();
 
-      // Step 6: Check pnpm installation
+      // Step 7: Check pnpm installation
       await this.ensurePnpmReady();
 
-      // Step 7: Setup environment file
+      // Step 8: Setup environment file
       await this.setupEnvironmentFile(projectPath);
 
-      // Step 8: Start PostgreSQL
+      // Step 9: Start PostgreSQL
       await this.ensurePostgresReady(projectPath);
 
-      // Step 9: Install dependencies
+      // Step 10: Install dependencies
       spinner.start('Installing project dependencies...');
       await runPnpmInstall(projectPath);
       spinner.succeed('Dependencies installed');
 
-      // Step 10: Run seed data
+      // Step 11: Run seed data
       spinner.start('Running seed data...');
       try {
         await runPnpmSeed(projectPath);
@@ -93,7 +96,7 @@ export class CodegenCloner {
         spinner.warn('Seed script not found or failed - skipping');
       }
 
-      // Step 11: Start development server
+      // Step 12: Start development server
       console.log(chalk.green.bold('\n✅ Setup complete! Starting development server...\n'));
       console.log(chalk.yellow('Press Ctrl+C to stop the development server\n'));
 
@@ -103,6 +106,32 @@ export class CodegenCloner {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error(chalk.red.bold(`\n❌ Error: ${errorMessage}`));
       process.exit(1);
+    }
+  }
+
+  private async ensureGitHubAuth(): Promise<void> {
+    const spinner = ora('Checking GitHub authentication...').start();
+
+    const hasGH = await isGitHubCLIInstalled();
+    const isAuth = await isGitHubCLIAuthenticated();
+
+    if (!hasGH || !isAuth) {
+      spinner.warn('GitHub CLI authentication not configured');
+      console.log(chalk.yellow('\n📝 To set up GitHub authentication:'));
+      console.log(chalk.cyan('1. Install GitHub CLI: https://cli.github.com/'));
+      console.log(chalk.cyan('2. Run: gh auth login'));
+      console.log(chalk.cyan('3. Follow the prompts to authenticate\n'));
+      
+      // Don't fail, just warn - git may work with existing credentials
+      return;
+    }
+
+    try {
+      await setupGitHubAuth();
+      spinner.succeed('GitHub authentication configured');
+    } catch (error) {
+      spinner.warn(`GitHub CLI setup issue: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Don't fail - user might have other git credentials set up
     }
   }
 

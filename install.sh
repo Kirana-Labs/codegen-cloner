@@ -150,16 +150,40 @@ install_binary() {
     fi
 }
 
-# Check if binary is in PATH and provide guidance
+# Check if binary is in PATH and add to shell profile if needed
 check_path() {
     if command -v "$BINARY_NAME" >/dev/null 2>&1; then
         echo -e "${GREEN}✅ ${BINARY_NAME} is available in your PATH${NC}"
         echo -e "${BLUE}🚀 You can now run: ${BINARY_NAME}${NC}"
     else
         echo -e "${YELLOW}⚠️  ${BINARY_NAME} is not in your PATH${NC}"
-        echo -e "${YELLOW}   Add ${INSTALL_DIR} to your PATH by adding this line to your shell profile:${NC}"
-        echo -e "${BLUE}   export PATH=\"${INSTALL_DIR}:\$PATH\"${NC}"
-        echo -e "${YELLOW}   Then restart your terminal or run: source ~/.bashrc (or ~/.zshrc)${NC}"
+        
+        # Detect shell and appropriate config file
+        SHELL_CONFIG=""
+        if [ -n "$BASH_VERSION" ] || [ "$SHELL" = "/bin/bash" ]; then
+            SHELL_CONFIG="$HOME/.bashrc"
+            [ ! -f "$SHELL_CONFIG" ] && SHELL_CONFIG="$HOME/.bash_profile"
+        elif [ -n "$ZSH_VERSION" ] || [ "$SHELL" = "/bin/zsh" ]; then
+            SHELL_CONFIG="$HOME/.zshrc"
+        else
+            # Default to .bashrc if shell is unknown
+            SHELL_CONFIG="$HOME/.bashrc"
+        fi
+        
+        # Check if PATH export already exists in the config file
+        EXPORT_LINE="export PATH=\"${INSTALL_DIR}:\$PATH\""
+        if [ -f "$SHELL_CONFIG" ] && grep -q "export PATH=.*${INSTALL_DIR}" "$SHELL_CONFIG"; then
+            echo -e "${BLUE}PATH already configured in ${SHELL_CONFIG}${NC}"
+        else
+            # Add PATH export to shell config
+            echo "" >> "$SHELL_CONFIG"
+            echo "# Added by codegen-cloner installer" >> "$SHELL_CONFIG"
+            echo "$EXPORT_LINE" >> "$SHELL_CONFIG"
+            echo -e "${GREEN}✅ Added ${INSTALL_DIR} to PATH in ${SHELL_CONFIG}${NC}"
+        fi
+        
+        echo -e "${YELLOW}   To use ${BINARY_NAME} now, run: source ${SHELL_CONFIG}${NC}"
+        echo -e "${YELLOW}   Or restart your terminal${NC}"
     fi
 }
 
@@ -167,7 +191,7 @@ check_path() {
 show_usage() {
     echo -e "${BLUE}"
     echo "╭─────────────────────────────────────╮"
-    echo "│       Codegen Cloner Installed     │"
+    echo "│       Codegen Cloner Installed      │"
     echo "╰─────────────────────────────────────╯"
     echo -e "${NC}"
     echo -e "${GREEN}Usage:${NC}"
@@ -187,7 +211,7 @@ show_usage() {
 main() {
     echo -e "${BLUE}"
     echo "╭─────────────────────────────────────╮"
-    echo "│      Codegen Cloner Installer      │"
+    echo "│      Codegen Cloner Installer       │"
     echo "╰─────────────────────────────────────╯"
     echo -e "${NC}"
 

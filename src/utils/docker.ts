@@ -17,7 +17,7 @@ export async function installDocker(): Promise<void> {
   const platform = process.platform;
 
   if (platform === 'darwin') {
-    throw new Error('Please install Docker Desktop for Mac manually from https://docs.docker.com/desktop/install/mac-install/');
+    throw new Error('Please install OrbStack manually from https://orbstack.dev/download');
   } else if (platform === 'linux') {
     // Install Docker on Linux
     const commands = [
@@ -50,23 +50,58 @@ export async function startDocker(): Promise<void> {
   const platform = process.platform;
 
   if (platform === 'darwin') {
-    // Try Docker Desktop first
-    try {
-      await execAsync('open /Applications/Docker.app');
-      await waitForDocker();
-      return;
-    } catch {
-      // Docker Desktop not found, check if OrbStack or other Docker setup is available
-      if (await isDockerRunning()) {
-        return; // Docker is already running via other means
+    // Check which Docker provider is installed and try to start it
+    const hasOrbStack = await checkIfAppExists('/Applications/OrbStack.app');
+    const hasDockerDesktop = await checkIfAppExists('/Applications/Docker.app');
+
+    if (hasOrbStack) {
+      try {
+        await execAsync('open -a OrbStack');
+        await waitForDocker();
+        return;
+      } catch (error) {
+        // OrbStack failed to start, try Docker Desktop if available
+        if (hasDockerDesktop) {
+          try {
+            await execAsync('open /Applications/Docker.app');
+            await waitForDocker();
+            return;
+          } catch {
+            // Both failed
+          }
+        }
       }
-      throw new Error('Docker is not running. Please start Docker Desktop, OrbStack, or your Docker setup manually.');
+    } else if (hasDockerDesktop) {
+      try {
+        await execAsync('open /Applications/Docker.app');
+        await waitForDocker();
+        return;
+      } catch {
+        // Docker Desktop failed to start
+      }
     }
+
+    // Check if Docker is running via other means
+    if (await isDockerRunning()) {
+      return;
+    }
+
+    // Nothing worked
+    throw new Error('Docker is not running and could not be started. Please install OrbStack (https://orbstack.dev/download) or Docker Desktop and ensure it can start.');
   } else if (platform === 'linux') {
     await execAsync('sudo systemctl start docker');
     await waitForDocker();
   } else {
     throw new Error('Docker must be started manually on Windows');
+  }
+}
+
+async function checkIfAppExists(appPath: string): Promise<boolean> {
+  try {
+    await execAsync(`test -d "${appPath}"`);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -103,18 +138,19 @@ export async function startPostgresContainer(projectPath: string): Promise<void>
     );
 
     // Wait for postgres to be ready
-    await waitForPostgres();
+    await waitForPostgres(projectPath);
   } catch (error) {
     throw new Error(`Failed to start PostgreSQL container: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
-async function waitForPostgres(timeoutMs: number = 180000): Promise<void> {
+async function waitForPostgres(projectPath: string, timeoutMs: number = 180000): Promise<void> {
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeoutMs) {
     try {
-      await execAsync('docker exec db pg_isready -U postgres');
+      // Use docker compose exec instead of docker exec to handle container naming automatically
+      await execAsync('docker compose exec -T db pg_isready -U postgres', { cwd: projectPath });
       return;
     } catch {
       await new Promise(resolve => setTimeout(resolve, 2000));
