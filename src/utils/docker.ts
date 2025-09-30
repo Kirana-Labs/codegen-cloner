@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { executeWithStreaming } from './streaming-exec';
 
 const execAsync = promisify(exec);
 
@@ -93,8 +94,13 @@ export async function isPostgresContainerRunning(): Promise<boolean> {
 
 export async function startPostgresContainer(projectPath: string): Promise<void> {
   try {
-    // Use docker-compose to start the db service
-    await execAsync('docker compose up -d db', { cwd: projectPath });
+    // Use docker-compose to start the db service with streaming output
+    await executeWithStreaming(
+      'docker',
+      ['compose', 'up', '-d', 'db'],
+      'Starting PostgreSQL container with docker-compose...',
+      { cwd: projectPath }
+    );
 
     // Wait for postgres to be ready
     await waitForPostgres();

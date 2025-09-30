@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { executeWithStreaming } from './streaming-exec';
 
 const execAsync = promisify(exec);
 
@@ -15,7 +16,11 @@ export async function isPnpmInstalled(): Promise<boolean> {
 export async function installPnpm(): Promise<void> {
   try {
     // Install pnpm using npm (most universal method)
-    await execAsync('npm install -g pnpm');
+    await executeWithStreaming(
+      'npm',
+      ['install', '-g', 'pnpm'],
+      'Installing pnpm globally...'
+    );
   } catch (error) {
     throw new Error(`Failed to install pnpm: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -23,7 +28,12 @@ export async function installPnpm(): Promise<void> {
 
 export async function runPnpmInstall(projectPath: string): Promise<void> {
   try {
-    await execAsync('pnpm install', { cwd: projectPath });
+    await executeWithStreaming(
+      'pnpm',
+      ['install'],
+      'Installing dependencies with pnpm...',
+      { cwd: projectPath }
+    );
   } catch (error) {
     throw new Error(`Failed to run pnpm install: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -31,7 +41,12 @@ export async function runPnpmInstall(projectPath: string): Promise<void> {
 
 export async function runPnpmSeed(projectPath: string): Promise<void> {
   try {
-    await execAsync('pnpm seed', { cwd: projectPath });
+    await executeWithStreaming(
+      'pnpm',
+      ['seed'],
+      'Running database seed...',
+      { cwd: projectPath }
+    );
   } catch (error) {
     throw new Error(`Failed to run pnpm seed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

@@ -108,7 +108,14 @@ install_binary() {
         INSTALL_PATH="$INSTALL_DIR/$BINARY_NAME"
     fi
 
-    echo -e "${BLUE}📦 Installing to ${INSTALL_PATH}...${NC}"
+    # Check if binary already exists and get current version
+    CURRENT_VERSION=""
+    if [ -f "$INSTALL_PATH" ]; then
+        CURRENT_VERSION=$("$INSTALL_PATH" --version 2>/dev/null || echo "unknown")
+        echo -e "${BLUE}📦 Updating existing installation (v${CURRENT_VERSION} → ${LATEST_TAG})...${NC}"
+    else
+        echo -e "${BLUE}📦 Installing to ${INSTALL_PATH}...${NC}"
+    fi
 
     # Install binary
     if ! mv "$BINARY_NAME" "$INSTALL_PATH"; then
@@ -130,7 +137,17 @@ install_binary() {
     cd - > /dev/null
     rm -rf "$TMP_DIR"
 
-    echo -e "${GREEN}✅ Successfully installed ${BINARY_NAME} to ${INSTALL_PATH}${NC}"
+    if [ -n "$CURRENT_VERSION" ] && [ "$CURRENT_VERSION" != "unknown" ]; then
+        if [ "$CURRENT_VERSION" = "${LATEST_TAG#v}" ]; then
+            echo -e "${GREEN}✅ ${BINARY_NAME} is already up to date (${LATEST_TAG})${NC}"
+        elif [ "$CURRENT_VERSION" \< "${LATEST_TAG#v}" ]; then
+            echo -e "${GREEN}✅ Successfully upgraded ${BINARY_NAME} (v${CURRENT_VERSION} → ${LATEST_TAG})${NC}"
+        else
+            echo -e "${YELLOW}⚠️  Downgraded ${BINARY_NAME} (v${CURRENT_VERSION} → ${LATEST_TAG})${NC}"
+        fi
+    else
+        echo -e "${GREEN}✅ Successfully installed ${BINARY_NAME} ${LATEST_TAG} to ${INSTALL_PATH}${NC}"
+    fi
 }
 
 # Check if binary is in PATH and provide guidance

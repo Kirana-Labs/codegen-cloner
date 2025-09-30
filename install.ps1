@@ -65,11 +65,37 @@ function Install-Binary {
 
     $InstallPath = Join-Path $InstallDir "$BinaryName.exe"
 
+    # Check if binary already exists and get current version
+    $CurrentVersion = $null
+    if (Test-Path $InstallPath) {
+        try {
+            $CurrentVersion = & $InstallPath --version 2>$null
+            Write-ColorOutput "📦 Updating existing installation (v$CurrentVersion → $Version)..." "Blue"
+        } catch {
+            $CurrentVersion = "unknown"
+            Write-ColorOutput "📦 Updating existing installation..." "Blue"
+        }
+    } else {
+        Write-ColorOutput "📦 Installing to $InstallPath..." "Blue"
+    }
+
     try {
         # Download binary
         Invoke-WebRequest -Uri $DownloadUrl -OutFile $InstallPath
-        Write-ColorOutput "📦 Installing to $InstallPath..." "Blue"
-        Write-ColorOutput "✅ Successfully installed $BinaryName to $InstallPath" "Green"
+
+        # Provide appropriate success message
+        if ($CurrentVersion -and $CurrentVersion -ne "unknown") {
+            if ($CurrentVersion -eq $Version.TrimStart('v')) {
+                Write-ColorOutput "✅ $BinaryName is already up to date ($Version)" "Green"
+            } elseif ($CurrentVersion -lt $Version.TrimStart('v')) {
+                Write-ColorOutput "✅ Successfully upgraded $BinaryName (v$CurrentVersion → $Version)" "Green"
+            } else {
+                Write-ColorOutput "⚠️  Downgraded $BinaryName (v$CurrentVersion → $Version)" "Yellow"
+            }
+        } else {
+            Write-ColorOutput "✅ Successfully installed $BinaryName $Version to $InstallPath" "Green"
+        }
+
         return $InstallPath
     }
     catch {

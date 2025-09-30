@@ -1,6 +1,7 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { PRInfo } from '../types';
+import { executeWithStreaming } from './streaming-exec';
 
 const execAsync = promisify(exec);
 
@@ -9,10 +10,19 @@ export async function cloneRepository(prInfo: PRInfo, targetPath: string): Promi
 
   try {
     // First clone the repository
-    await execAsync(`git clone ${repoUrl} "${targetPath}"`);
+    await executeWithStreaming(
+      'git',
+      ['clone', repoUrl, targetPath],
+      'Cloning repository...'
+    );
 
     // Then fetch the PR and create/checkout the branch
-    await execAsync(`git fetch origin pull/${prInfo.prNumber}/head:${prInfo.branch}`, { cwd: targetPath });
+    await executeWithStreaming(
+      'git',
+      ['fetch', 'origin', `pull/${prInfo.prNumber}/head:${prInfo.branch}`],
+      `Fetching PR #${prInfo.prNumber}...`,
+      { cwd: targetPath }
+    );
     await execAsync(`git checkout ${prInfo.branch}`, { cwd: targetPath });
 
   } catch (error) {
@@ -22,7 +32,11 @@ export async function cloneRepository(prInfo: PRInfo, targetPath: string): Promi
       await execAsync(`rm -rf "${targetPath}"`).catch(() => {});
 
       // Try to clone the branch directly (if it's a regular branch)
-      await execAsync(`git clone -b ${prInfo.branch} ${repoUrl} "${targetPath}"`);
+      await executeWithStreaming(
+        'git',
+        ['clone', '-b', prInfo.branch, repoUrl, targetPath],
+        `Cloning branch ${prInfo.branch}...`
+      );
     } catch (fallbackError) {
       throw new Error(`Failed to clone repository: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -32,13 +46,23 @@ export async function cloneRepository(prInfo: PRInfo, targetPath: string): Promi
 export async function pullLatestChanges(projectPath: string, branch: string): Promise<void> {
   try {
     // Fetch latest changes
-    await execAsync('git fetch origin', { cwd: projectPath });
+    await executeWithStreaming(
+      'git',
+      ['fetch', 'origin'],
+      'Fetching latest changes...',
+      { cwd: projectPath }
+    );
 
     // Checkout the correct branch
     await execAsync(`git checkout ${branch}`, { cwd: projectPath });
 
     // Pull latest changes
-    await execAsync(`git pull origin ${branch}`, { cwd: projectPath });
+    await executeWithStreaming(
+      'git',
+      ['pull', 'origin', branch],
+      `Pulling latest changes from ${branch}...`,
+      { cwd: projectPath }
+    );
   } catch (error) {
     throw new Error(`Failed to pull latest changes: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
