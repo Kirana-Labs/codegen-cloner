@@ -40,8 +40,8 @@ jobs:
     
     - name: Code sign macOS binaries
       run: |
-        ldid -S binaries/index-macos-x64
-        ldid -S binaries/index-macos-arm64
+        ldid -S binaries/codegen-cloner-macos-x64
+        ldid -S binaries/codegen-cloner-macos-arm64
 
     - name: Create release
       uses: softprops/action-gh-release@v1
