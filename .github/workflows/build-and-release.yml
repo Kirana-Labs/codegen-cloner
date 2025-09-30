@@ -48,35 +48,14 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          binaries/index-linux-x64
-          binaries/index-macos-x64
-          binaries/index-macos-arm64
-          binaries/index-win-x64.exe
-          install.sh
-          install.ps1
-        generate_release_notes: true
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Rename binaries for release
-      run: |
-        mv binaries/index-linux-x64 binaries/codegen-cloner-linux-x64
-        mv binaries/index-macos-x64 binaries/codegen-cloner-macos-x64
-        mv binaries/index-macos-arm64 binaries/codegen-cloner-macos-arm64
-        mv binaries/index-win-x64.exe binaries/codegen-cloner-win-x64.exe
-
-    - name: Update release with renamed binaries
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
           binaries/codegen-cloner-linux-x64
           binaries/codegen-cloner-macos-x64
           binaries/codegen-cloner-macos-arm64
           binaries/codegen-cloner-win-x64.exe
           install.sh
           install.ps1
+        generate_release_notes: true
+        draft: false
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
