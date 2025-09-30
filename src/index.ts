@@ -26,13 +26,19 @@ program
 program
   .command('prune')
   .description('Delete projects older than 2 weeks')
-  .action(async () => {
+  .option('-f, --force', 'Force delete ALL projects to clear space')
+  .action(async (options) => {
     try {
       console.log(chalk.blue.bold(`🤖 Codegen Cloner v${version}\n`));
 
       const defaultDir = join(homedir(), 'codegen-projects');
       const pruner = new ProjectPruner(defaultDir);
-      await pruner.pruneProjects();
+      
+      if (options.force) {
+        await pruner.pruneAllProjects();
+      } else {
+        await pruner.pruneProjects();
+      }
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
